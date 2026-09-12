@@ -11,5 +11,8 @@
     "collegeProject"
   ],
   "author": "Prince,Priyanshu,Pradhan,Pratham",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "3.9.6"
+  }
 }
