@@ -1,0 +1,15 @@
+{
+  "name": "mandi_mantra",
+  "version": "1.0.0",
+  "description": "ai crop price prediction",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "collegeProject"
+  ],
+  "author": "Prince,Priyanshu,Pradhan,Pratham",
+  "license": "ISC"
+}
