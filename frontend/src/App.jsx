@@ -1,9 +1,14 @@
-import React from 'react'
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Home from "./pages/Home";
 
 function App() {
   return (
-    <div><h1>Welcome to Mandi mantra</h1></div>
-  )
+    <Routes>
+      <Route path="/" element={<Navigate to="/Home" replace />} />
+      <Route path="/Home" element={<Home />} />
+    </Routes>
+  );
 }
 
 export default App;
