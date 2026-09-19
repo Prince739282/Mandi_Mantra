@@ -1,6 +1,22 @@
-import React from "react";
+import { useState } from "react";
 
 function Home() {
+  const [commodity, setCommodity] = useState("");
+  const [state, setState] = useState("");
+  const [district, setDistrict] = useState("");
+  const [market, setMarket] = useState("");
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+
+    console.log({
+      commodity,
+      state,
+      district,
+      market,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
@@ -22,7 +38,6 @@ function Home() {
 
       {/* Main */}
       <main className="max-w-6xl mx-auto px-6 py-12">
-        {/* Heading */}
         <div className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-800">
             Check Mandi Prices
@@ -35,7 +50,10 @@ function Home() {
         </div>
 
         {/* Search Form */}
-        <div className="bg-white border rounded-lg p-6 max-w-4xl">
+        <form
+          onSubmit={handleSearch}
+          className="bg-white border rounded-lg p-6 max-w-4xl"
+        >
           <h3 className="text-lg font-medium text-gray-800 mb-5">
             Search Price
           </h3>
@@ -49,6 +67,8 @@ function Home() {
 
               <input
                 type="text"
+                value={commodity}
+                onChange={(event) => setCommodity(event.target.value)}
                 placeholder="e.g. Tomato"
                 className="w-full border border-gray-300 rounded-md px-3 py-2.5 outline-none focus:border-green-600"
               />
@@ -58,16 +78,20 @@ function Home() {
             <div>
               <label className="block text-sm text-gray-700 mb-2">State</label>
 
-              <select className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600">
+              <select
+                value={state}
+                onChange={(event) => setState(event.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600"
+              >
                 <option value="">Select State</option>
 
-                <option>Uttar Pradesh</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
 
-                <option>Haryana</option>
+                <option value="Haryana">Haryana</option>
 
-                <option>Delhi</option>
+                <option value="Delhi">Delhi</option>
 
-                <option>Rajasthan</option>
+                <option value="Rajasthan">Rajasthan</option>
               </select>
             </div>
 
@@ -79,12 +103,14 @@ function Home() {
 
               <input
                 type="text"
+                value={district}
+                onChange={(event) => setDistrict(event.target.value)}
                 placeholder="e.g. Ghaziabad"
                 className="w-full border border-gray-300 rounded-md px-3 py-2.5 outline-none focus:border-green-600"
               />
             </div>
 
-            {/* Mandi */}
+            {/* Market */}
             <div>
               <label className="block text-sm text-gray-700 mb-2">
                 Mandi / Market
@@ -92,6 +118,8 @@ function Home() {
 
               <input
                 type="text"
+                value={market}
+                onChange={(event) => setMarket(event.target.value)}
                 placeholder="e.g. Ghaziabad Mandi"
                 className="w-full border border-gray-300 rounded-md px-3 py-2.5 outline-none focus:border-green-600"
               />
@@ -100,17 +128,23 @@ function Home() {
 
           {/* Buttons */}
           <div className="flex gap-3 mt-6">
-            <button className="bg-green-600 text-white px-6 py-2.5 rounded-md hover:bg-green-700">
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-6 py-2.5 rounded-md hover:bg-green-700"
+            >
               Search
             </button>
 
-            <button className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-md hover:bg-gray-50">
+            <button
+              type="button"
+              className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-md hover:bg-gray-50"
+            >
               Use My Location
             </button>
           </div>
-        </div>
+        </form>
 
-        {/* Information */}
+        {/* About */}
         <div id="about" className="mt-12 max-w-4xl">
           <h3 className="text-xl font-medium text-gray-800">
             About MandiMantra
