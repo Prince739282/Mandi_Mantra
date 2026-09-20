@@ -1,19 +1,22 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [commodity, setCommodity] = useState("");
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
   const [market, setMarket] = useState("");
+  const navigate = useNavigate();
 
   const handleSearch = (event) => {
     event.preventDefault();
-
-    console.log({
-      commodity,
-      state,
-      district,
-      market,
+    navigate("/MandiPrice", {
+      state: {
+        commodity,
+        state,
+        district,
+        market,
+      },
     });
   };
 
