@@ -8,18 +8,38 @@ function Home() {
   const [market, setMarket] = useState("");
   const navigate = useNavigate();
 
-  const handleSearch = (event) => {
+  const handleSearch = async (event) => {
     event.preventDefault();
-    navigate("/MandiPrice", {
-      state: {
-        commodity,
-        state,
-        district,
-        market,
-      },
-    });
-  };
 
+    const params = new URLSearchParams({
+      commodity,
+      state,
+      district,
+      market,
+    });
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/v1/mandi/prices?${params.toString()}`,
+      );
+
+      const data = await response.json();
+
+      navigate("/MandiPrice", {
+        state: {
+          searchData: {
+            commodity,
+            state,
+            district,
+            market,
+          },
+          priceData: data,
+        },
+      });
+    } catch (error) {
+      console.log("Error fetching mandi prices:", error);
+    }
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
