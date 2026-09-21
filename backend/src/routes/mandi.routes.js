@@ -2,6 +2,48 @@ import { Router } from "express";
 
 const router = Router();
 
+router.get("/locations", async (req, res) => {
+  try {
+    const { state, district } = req.query;
+
+    if (!state) {
+      return res.status(400).json({
+        message: "State is required",
+      });
+    }
+
+    const params = new URLSearchParams({
+      "api-key": process.env.GOV_API_KEY,
+      format: "json",
+      limit: "1000",
+    });
+
+    params.append("filters[state]", state);
+
+    if (district) {
+      params.append("filters[district]", district);
+    }
+
+    const response = await fetch(
+      `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`,
+    );
+
+    const data = await response.json();
+
+    const values = district
+      ? [...new Set(data.records.map((record) => record.market))]
+      : [...new Set(data.records.map((record) => record.district))];
+
+    res.json(values);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Failed to fetch locations",
+    });
+  }
+});
+
 router.get("/prices", async (req, res) => {
   try {
     const { commodity, state, district, market } = req.query;

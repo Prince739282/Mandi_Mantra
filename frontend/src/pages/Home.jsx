@@ -1,12 +1,74 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
+  const navigate = useNavigate();
+
   const [commodity, setCommodity] = useState("");
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
   const [market, setMarket] = useState("");
-  const navigate = useNavigate();
+
+  const [districts, setDistricts] = useState([]);
+  const [markets, setMarkets] = useState([]);
+
+  useEffect(() => {
+    if (!state) {
+      setDistricts([]);
+      setDistrict("");
+      setMarkets([]);
+      setMarket("");
+      return;
+    }
+
+    const fetchDistricts = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/v1/mandi/locations?state=${encodeURIComponent(
+            state,
+          )}`,
+        );
+
+        const data = await response.json();
+
+        setDistricts(data);
+        setDistrict("");
+        setMarkets([]);
+        setMarket("");
+      } catch (error) {
+        console.log("Error fetching districts:", error);
+      }
+    };
+
+    fetchDistricts();
+  }, [state]);
+
+  useEffect(() => {
+    if (!state || !district) {
+      setMarkets([]);
+      setMarket("");
+      return;
+    }
+
+    const fetchMarkets = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/v1/mandi/locations?state=${encodeURIComponent(
+            state,
+          )}&district=${encodeURIComponent(district)}`,
+        );
+
+        const data = await response.json();
+
+        setMarkets(data);
+        setMarket("");
+      } catch (error) {
+        console.log("Error fetching markets:", error);
+      }
+    };
+
+    fetchMarkets();
+  }, [state, district]);
 
   const handleSearch = async (event) => {
     event.preventDefault();
@@ -40,9 +102,9 @@ function Home() {
       console.log("Error fetching mandi prices:", error);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
       <nav className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-green-700">MandiMantra</h1>
@@ -59,7 +121,6 @@ function Home() {
         </div>
       </nav>
 
-      {/* Main */}
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-800">
@@ -72,7 +133,6 @@ function Home() {
           </p>
         </div>
 
-        {/* Search Form */}
         <form
           onSubmit={handleSearch}
           className="bg-white border rounded-lg p-6 max-w-4xl"
@@ -124,32 +184,49 @@ function Home() {
                 District
               </label>
 
-              <input
-                type="text"
+              <select
                 value={district}
                 onChange={(event) => setDistrict(event.target.value)}
-                placeholder="e.g. Ghaziabad"
-                className="w-full border border-gray-300 rounded-md px-3 py-2.5 outline-none focus:border-green-600"
-              />
+                disabled={!state}
+                className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600 disabled:bg-gray-100"
+              >
+                <option value="">
+                  {state ? "Select District" : "Select State First"}
+                </option>
+
+                {districts.map((districtName) => (
+                  <option key={districtName} value={districtName}>
+                    {districtName}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Market */}
+            {/* Mandi */}
             <div>
               <label className="block text-sm text-gray-700 mb-2">
                 Mandi / Market
               </label>
 
-              <input
-                type="text"
+              <select
                 value={market}
                 onChange={(event) => setMarket(event.target.value)}
-                placeholder="e.g. Ghaziabad Mandi"
-                className="w-full border border-gray-300 rounded-md px-3 py-2.5 outline-none focus:border-green-600"
-              />
+                disabled={!district}
+                className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600 disabled:bg-gray-100"
+              >
+                <option value="">
+                  {district ? "Select Mandi" : "Select District First"}
+                </option>
+
+                {markets.map((marketName) => (
+                  <option key={marketName} value={marketName}>
+                    {marketName}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3 mt-6">
             <button
               type="submit"
@@ -167,7 +244,6 @@ function Home() {
           </div>
         </form>
 
-        {/* About */}
         <div id="about" className="mt-12 max-w-4xl">
           <h3 className="text-xl font-medium text-gray-800">
             About MandiMantra
@@ -181,7 +257,6 @@ function Home() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t bg-white mt-10">
         <div className="max-w-6xl mx-auto px-6 py-5 text-sm text-gray-500">
           MandiMantra &copy; 2026

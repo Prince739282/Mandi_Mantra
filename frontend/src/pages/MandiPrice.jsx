@@ -6,7 +6,7 @@ function MandiPrice() {
   const searchData = location.state?.searchData;
   const priceData = location.state?.priceData;
 
-  const record = priceData?.records?.[0];
+  const records = priceData?.records || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -21,45 +21,51 @@ function MandiPrice() {
           Mandi Price
         </h2>
 
-        {record ? (
-          <div className="bg-white border rounded-lg p-6 max-w-3xl">
-            <h3 className="text-xl font-medium text-gray-800">
-              {record.commodity}
-            </h3>
+        {records.length > 0 ? (
+          <div className="space-y-5">
+            {records.map((record, index) => (
+              <div key={index} className="bg-white border rounded-lg p-6">
+                <h3 className="text-xl font-medium text-gray-800">
+                  {record.commodity}
+                </h3>
 
-            <p className="text-gray-500 mt-2">
-              {record.market}, {record.district}, {record.state}
-            </p>
-
-            <p className="text-sm text-gray-500 mt-2">
-              Date: {record.arrival_date}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="border rounded-md p-4">
-                <p className="text-sm text-gray-500">Minimum Price</p>
-
-                <p className="text-xl font-semibold mt-1">
-                  ₹{record.min_price}
+                <p className="text-gray-500 mt-2">
+                  {record.market}, {record.district}, {record.state}
                 </p>
+
+                <div className="text-sm text-gray-500 mt-2 space-y-1">
+                  <p>Date: {record.arrival_date}</p>
+                  <p>Variety: {record.variety}</p>
+                  <p>Grade: {record.grade}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  <div className="border rounded-md p-4">
+                    <p className="text-sm text-gray-500">Minimum Price</p>
+
+                    <p className="text-xl font-semibold mt-1">
+                      ₹{record.min_price}
+                    </p>
+                  </div>
+
+                  <div className="border rounded-md p-4">
+                    <p className="text-sm text-gray-500">Maximum Price</p>
+
+                    <p className="text-xl font-semibold mt-1">
+                      ₹{record.max_price}
+                    </p>
+                  </div>
+
+                  <div className="border rounded-md p-4">
+                    <p className="text-sm text-gray-500">Modal Price</p>
+
+                    <p className="text-xl font-semibold mt-1">
+                      ₹{record.modal_price}
+                    </p>
+                  </div>
+                </div>
               </div>
-
-              <div className="border rounded-md p-4">
-                <p className="text-sm text-gray-500">Maximum Price</p>
-
-                <p className="text-xl font-semibold mt-1">
-                  ₹{record.max_price}
-                </p>
-              </div>
-
-              <div className="border rounded-md p-4">
-                <p className="text-sm text-gray-500">Modal Price</p>
-
-                <p className="text-xl font-semibold mt-1">
-                  ₹{record.modal_price}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         ) : (
           <div className="bg-white border rounded-lg p-6 max-w-3xl">
