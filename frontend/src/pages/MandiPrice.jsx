@@ -3,7 +3,10 @@ import { useLocation } from "react-router-dom";
 function MandiPrice() {
   const location = useLocation();
 
-  const searchData = location.state;
+  const searchData = location.state?.searchData;
+  const priceData = location.state?.priceData;
+
+  const record = priceData?.records?.[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -18,38 +21,56 @@ function MandiPrice() {
           Mandi Price
         </h2>
 
-        {searchData ? (
+        {record ? (
           <div className="bg-white border rounded-lg p-6 max-w-3xl">
             <h3 className="text-xl font-medium text-gray-800">
-              {searchData.commodity}
+              {record.commodity}
             </h3>
 
             <p className="text-gray-500 mt-2">
-              {searchData.market}, {searchData.district}, {searchData.state}
+              {record.market}, {record.district}, {record.state}
+            </p>
+
+            <p className="text-sm text-gray-500 mt-2">
+              Date: {record.arrival_date}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="border rounded-md p-4">
                 <p className="text-sm text-gray-500">Minimum Price</p>
 
-                <p className="text-xl font-semibold text-gray-800 mt-1">₹ -</p>
+                <p className="text-xl font-semibold mt-1">
+                  ₹{record.min_price}
+                </p>
               </div>
 
               <div className="border rounded-md p-4">
                 <p className="text-sm text-gray-500">Maximum Price</p>
 
-                <p className="text-xl font-semibold text-gray-800 mt-1">₹ -</p>
+                <p className="text-xl font-semibold mt-1">
+                  ₹{record.max_price}
+                </p>
               </div>
 
               <div className="border rounded-md p-4">
                 <p className="text-sm text-gray-500">Modal Price</p>
 
-                <p className="text-xl font-semibold text-gray-800 mt-1">₹ -</p>
+                <p className="text-xl font-semibold mt-1">
+                  ₹{record.modal_price}
+                </p>
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-gray-500">No search data available.</p>
+          <div className="bg-white border rounded-lg p-6 max-w-3xl">
+            <p className="text-gray-500">No mandi price data found.</p>
+
+            {searchData && (
+              <p className="text-sm text-gray-400 mt-2">
+                Try changing your search details.
+              </p>
+            )}
+          </div>
         )}
       </main>
     </div>
