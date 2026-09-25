@@ -18,6 +18,10 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Location
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationMessage, setLocationMessage] = useState("");
+
   // Compare search
   const [compareState, setCompareState] = useState("");
   const [compareDistrict, setCompareDistrict] = useState("");
@@ -36,6 +40,8 @@ function Home() {
   useEffect(() => {
     const fetchStates = async () => {
       try {
+        setError("");
+
         const response = await fetch(
           "http://localhost:8000/api/v1/mandi/states",
         );
@@ -49,7 +55,9 @@ function Home() {
         setStates(data);
       } catch (error) {
         console.log("Error fetching states:", error);
-        setError("Unable to load states.");
+        setError(
+          "Unable to load states. The Government price service may be temporarily unavailable.",
+        );
       }
     };
 
@@ -269,6 +277,59 @@ function Home() {
   }, [compareState, compareDistrict]);
 
   // -----------------------------
+  // Use My Location
+  // -----------------------------
+  const handleUseLocation = () => {
+    setLocationMessage("");
+    setError("");
+
+    if (!navigator.geolocation) {
+      setLocationMessage("Location is not supported by your browser.");
+      return;
+    }
+
+    setLocationLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        console.log("User location:", {
+          latitude,
+          longitude,
+        });
+
+        setLocationMessage(
+          `Location detected: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+        );
+
+        setLocationLoading(false);
+      },
+      (error) => {
+        console.log("Location error:", error);
+
+        if (error.code === 1) {
+          setLocationMessage(
+            "Location permission was denied. Please allow location access and try again.",
+          );
+        } else if (error.code === 2) {
+          setLocationMessage("Unable to detect your location.");
+        } else {
+          setLocationMessage("Location request timed out. Please try again.");
+        }
+
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  };
+
+  // -----------------------------
   // Main Search
   // -----------------------------
   const handleSearch = async (event) => {
@@ -414,6 +475,12 @@ function Home() {
             </div>
           )}
 
+          {locationMessage && (
+            <div className="mb-5 border border-green-200 bg-green-50 text-green-700 rounded-md px-4 py-3 text-sm">
+              {locationMessage}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* State */}
             <div>
@@ -518,9 +585,11 @@ function Home() {
 
             <button
               type="button"
-              className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-md hover:bg-gray-50"
+              onClick={handleUseLocation}
+              disabled={locationLoading}
+              className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
-              Use My Location
+              {locationLoading ? "Detecting..." : "Use My Location"}
             </button>
           </div>
         </form>
