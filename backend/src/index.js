@@ -6,6 +6,7 @@ import mandiRoutes from "./routes/mandi.routes.js";
 dotenv.config({
   path: "./.env",
 });
+console.log("API key loaded:", !!process.env.GOV_API_KEY);
 
 const app = express();
 

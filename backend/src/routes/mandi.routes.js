@@ -8,23 +8,39 @@ router.get("/states", async (req, res) => {
     const params = new URLSearchParams({
       "api-key": process.env.GOV_API_KEY,
       format: "json",
-      limit: "1000",
+      limit: "100",
     });
 
     const response = await fetch(
       `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`,
     );
 
-    const data = await response.json();
+    const responseText = await response.text();
 
-    console.log("State API status:", response.status);
-    console.log("State records:", data.records?.length || 0);
+    console.log("Government API status:", response.status);
+    console.log("Government API response:", responseText);
 
-    if (!response.ok || !data.records) {
-      console.log("State API response:", data);
-
+    if (!response.ok) {
       return res.status(500).json({
-        message: "Failed to fetch states",
+        message: "Government API request failed",
+        status: response.status,
+      });
+    }
+
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Government API did not return JSON",
+        response: responseText.substring(0, 200),
+      });
+    }
+
+    if (!data.records) {
+      return res.status(500).json({
+        message: "No records received from Government API",
       });
     }
 
@@ -39,7 +55,8 @@ router.get("/states", async (req, res) => {
     console.log("State API error:", error);
 
     res.status(500).json({
-      message: "Failed to fetch states",
+      message: "State API error",
+      error: error.message,
     });
   }
 });
@@ -71,7 +88,12 @@ router.get("/locations", async (req, res) => {
       `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`,
     );
 
-    const data = await response.json();
+    const responseText = await response.text();
+
+    console.log("Government API status:", response.status);
+    console.log("Government API response:", responseText);
+
+    const data = JSON.parse(responseText);
 
     console.log("Location search:", {
       state,
