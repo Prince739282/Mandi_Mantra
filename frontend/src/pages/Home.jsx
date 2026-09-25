@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 function Home() {
   const navigate = useNavigate();
 
+  // Main search
   const [commodity, setCommodity] = useState("");
   const [state, setState] = useState("");
+  const [states, setStates] = useState([]);
   const [district, setDistrict] = useState("");
   const [market, setMarket] = useState("");
 
@@ -16,16 +18,47 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Comparison states
-  const [compareCommodity, setCompareCommodity] = useState("");
+  // Compare search
   const [compareState, setCompareState] = useState("");
   const [compareDistrict, setCompareDistrict] = useState("");
+  const [compareCommodity, setCompareCommodity] = useState("");
 
   const [compareDistricts, setCompareDistricts] = useState([]);
+  const [compareCommodities, setCompareCommodities] = useState([]);
+
   const [comparePrices, setComparePrices] = useState([]);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState("");
 
+  // -----------------------------
+  // Load States
+  // -----------------------------
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8000/api/v1/mandi/states",
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch states");
+        }
+
+        const data = await response.json();
+
+        setStates(data);
+      } catch (error) {
+        console.log("Error fetching states:", error);
+        setError("Unable to load states.");
+      }
+    };
+
+    fetchStates();
+  }, []);
+
+  // -----------------------------
+  // Main Search - Districts
+  // -----------------------------
   useEffect(() => {
     if (!state) {
       setDistricts([]);
@@ -43,8 +76,8 @@ function Home() {
 
         const response = await fetch(
           `http://localhost:8000/api/v1/mandi/locations?state=${encodeURIComponent(
-            state
-          )}`
+            state,
+          )}`,
         );
 
         if (!response.ok) {
@@ -68,6 +101,9 @@ function Home() {
     fetchDistricts();
   }, [state]);
 
+  // -----------------------------
+  // Main Search - Markets
+  // -----------------------------
   useEffect(() => {
     if (!state || !district) {
       setMarkets([]);
@@ -83,8 +119,8 @@ function Home() {
 
         const response = await fetch(
           `http://localhost:8000/api/v1/mandi/locations?state=${encodeURIComponent(
-            state
-          )}&district=${encodeURIComponent(district)}`
+            state,
+          )}&district=${encodeURIComponent(district)}`,
         );
 
         if (!response.ok) {
@@ -106,6 +142,9 @@ function Home() {
     fetchMarkets();
   }, [state, district]);
 
+  // -----------------------------
+  // Main Search - Commodities
+  // -----------------------------
   useEffect(() => {
     if (!state || !district || !market) {
       setCommodities([]);
@@ -124,7 +163,7 @@ function Home() {
         });
 
         const response = await fetch(
-          `http://localhost:8000/api/v1/mandi/commodities?${params.toString()}`
+          `http://localhost:8000/api/v1/mandi/commodities?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -144,49 +183,16 @@ function Home() {
     fetchCommodities();
   }, [state, district, market]);
 
-  // Comparison district API
-useEffect(() => {
-  if (!compareState || !compareDistrict) {
-    setCompareCommodities([]);
-    setCompareCommodity("");
-    return;
-  }
-
-  const fetchCompareCommodities = async () => {
-    try {
-      setCompareError("");
-
-      const params = new URLSearchParams({
-        state: compareState,
-        district: compareDistrict,
-      });
-
-      const response = await fetch(
-        `http://localhost:8000/api/v1/mandi/district-commodities?${params.toString()}`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch comparison commodities");
-      }
-
-      const data = await response.json();
-
-      setCompareCommodities(data);
-      setCompareCommodity("");
-      setComparePrices([]);
-    } catch (error) {
-      console.log("Error fetching comparison commodities:", error);
-      setCompareError("Unable to load commodities.");
-    }
-  };
-
-  fetchCompareCommodities();
-}, [compareState, compareDistrict]);
-
+  // -----------------------------
+  // Compare Search - Districts
+  // -----------------------------
   useEffect(() => {
     if (!compareState) {
       setCompareDistricts([]);
       setCompareDistrict("");
+      setCompareCommodities([]);
+      setCompareCommodity("");
+      setComparePrices([]);
       return;
     }
 
@@ -196,8 +202,8 @@ useEffect(() => {
 
         const response = await fetch(
           `http://localhost:8000/api/v1/mandi/locations?state=${encodeURIComponent(
-            compareState
-          )}`
+            compareState,
+          )}`,
         );
 
         if (!response.ok) {
@@ -208,6 +214,8 @@ useEffect(() => {
 
         setCompareDistricts(data);
         setCompareDistrict("");
+        setCompareCommodities([]);
+        setCompareCommodity("");
         setComparePrices([]);
       } catch (error) {
         console.log("Error fetching comparison districts:", error);
@@ -218,6 +226,51 @@ useEffect(() => {
     fetchCompareDistricts();
   }, [compareState]);
 
+  // -----------------------------
+  // Compare Search - Commodities
+  // -----------------------------
+  useEffect(() => {
+    if (!compareState || !compareDistrict) {
+      setCompareCommodities([]);
+      setCompareCommodity("");
+      setComparePrices([]);
+      return;
+    }
+
+    const fetchCompareCommodities = async () => {
+      try {
+        setCompareError("");
+
+        const params = new URLSearchParams({
+          state: compareState,
+          district: compareDistrict,
+        });
+
+        const response = await fetch(
+          `http://localhost:8000/api/v1/mandi/district-commodities?${params.toString()}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch comparison commodities");
+        }
+
+        const data = await response.json();
+
+        setCompareCommodities(data);
+        setCompareCommodity("");
+        setComparePrices([]);
+      } catch (error) {
+        console.log("Error fetching comparison commodities:", error);
+        setCompareError("Unable to load commodities.");
+      }
+    };
+
+    fetchCompareCommodities();
+  }, [compareState, compareDistrict]);
+
+  // -----------------------------
+  // Main Search
+  // -----------------------------
   const handleSearch = async (event) => {
     event.preventDefault();
 
@@ -238,7 +291,7 @@ useEffect(() => {
       });
 
       const response = await fetch(
-        `http://localhost:8000/api/v1/mandi/prices?${params.toString()}`
+        `http://localhost:8000/api/v1/mandi/prices?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -266,6 +319,9 @@ useEffect(() => {
     }
   };
 
+  // -----------------------------
+  // Compare Prices
+  // -----------------------------
   const handleCompare = async (event) => {
     event.preventDefault();
 
@@ -286,7 +342,7 @@ useEffect(() => {
       });
 
       const response = await fetch(
-        `http://localhost:8000/api/v1/mandi/prices?${params.toString()}`
+        `http://localhost:8000/api/v1/mandi/prices?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -310,6 +366,7 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
       <nav className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-green-700">MandiMantra</h1>
@@ -331,7 +388,7 @@ useEffect(() => {
       </nav>
 
       <main className="max-w-6xl mx-auto px-6 py-12">
-        {/* Existing Search */}
+        {/* Main Search */}
         <div className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-800">
             Check Mandi Prices
@@ -358,6 +415,7 @@ useEffect(() => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* State */}
             <div>
               <label className="block text-sm text-gray-700 mb-2">State</label>
 
@@ -367,13 +425,16 @@ useEffect(() => {
                 className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600"
               >
                 <option value="">Select State</option>
-                <option value="Uttar Pradesh">Uttar Pradesh</option>
-                <option value="Haryana">Haryana</option>
-                <option value="Delhi">Delhi</option>
-                <option value="Rajasthan">Rajasthan</option>
+
+                {states.map((stateName) => (
+                  <option key={stateName} value={stateName}>
+                    {stateName}
+                  </option>
+                ))}
               </select>
             </div>
 
+            {/* District */}
             <div>
               <label className="block text-sm text-gray-700 mb-2">
                 District
@@ -397,6 +458,7 @@ useEffect(() => {
               </select>
             </div>
 
+            {/* Market */}
             <div>
               <label className="block text-sm text-gray-700 mb-2">
                 Mandi / Market
@@ -420,6 +482,7 @@ useEffect(() => {
               </select>
             </div>
 
+            {/* Commodity */}
             <div>
               <label className="block text-sm text-gray-700 mb-2">
                 Commodity
@@ -486,6 +549,7 @@ useEffect(() => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Compare State */}
               <div>
                 <label className="block text-sm text-gray-700 mb-2">
                   State
@@ -497,51 +561,76 @@ useEffect(() => {
                   className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600"
                 >
                   <option value="">Select State</option>
-                  <option value="Uttar Pradesh">Uttar Pradesh</option>
-                  <option value="Haryana">Haryana</option>
-                  <option value="Delhi">Delhi</option>
-                  <option value="Rajasthan">Rajasthan</option>
+
+                  {states.map((stateName) => (
+                    <option key={stateName} value={stateName}>
+                      {stateName}
+                    </option>
+                  ))}
                 </select>
               </div>
 
+              {/* Compare District */}
               <div>
                 <label className="block text-sm text-gray-700 mb-2">
                   District
                 </label>
 
-                <input
-                  type="text"
-                  value={compareCommodity}
-                  onChange={(event) => setCompareCommodity(event.target.value)}
-                  placeholder="Example: Tomato"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2.5 outline-none focus:border-green-600"
-                />
+                <select
+                  value={compareDistrict}
+                  onChange={(event) => setCompareDistrict(event.target.value)}
+                  disabled={!compareState}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600 disabled:bg-gray-100"
+                >
+                  <option value="">
+                    {compareState ? "Select District" : "Select State First"}
+                  </option>
+
+                  {compareDistricts.map((districtName) => (
+                    <option key={districtName} value={districtName}>
+                      {districtName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
+              {/* Compare Commodity */}
               <div>
                 <label className="block text-sm text-gray-700 mb-2">
                   Commodity
                 </label>
 
-                <input
-                  type="text"
+                <select
                   value={compareCommodity}
                   onChange={(event) => setCompareCommodity(event.target.value)}
-                  placeholder="Example: Tomato"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2.5 outline-none focus:border-green-600"
-                />
+                  disabled={!compareDistrict}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2.5 bg-white outline-none focus:border-green-600 disabled:bg-gray-100"
+                >
+                  <option value="">
+                    {compareDistrict
+                      ? "Select Commodity"
+                      : "Select District First"}
+                  </option>
+
+                  {compareCommodities.map((commodityName) => (
+                    <option key={commodityName} value={commodityName}>
+                      {commodityName}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={compareLoading}
-              className="mt-6 bg-green-600 text-white px-6 py-2.5 rounded-md hover:bg-green-700 disabled:bg-gray-400"
+              disabled={compareLoading || !compareCommodity}
+              className="mt-6 bg-green-600 text-white px-6 py-2.5 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {compareLoading ? "Comparing..." : "Compare Prices"}
             </button>
           </form>
 
+          {/* Comparison Results */}
           {comparePrices.length > 0 && (
             <div className="bg-white border rounded-lg mt-6 overflow-hidden">
               <div className="px-6 py-4 border-b">
@@ -561,15 +650,19 @@ useEffect(() => {
                       <th className="text-left px-6 py-3 font-medium text-gray-700">
                         Mandi
                       </th>
+
                       <th className="text-left px-6 py-3 font-medium text-gray-700">
                         Min Price
                       </th>
+
                       <th className="text-left px-6 py-3 font-medium text-gray-700">
                         Max Price
                       </th>
+
                       <th className="text-left px-6 py-3 font-medium text-gray-700">
                         Modal Price
                       </th>
+
                       <th className="text-left px-6 py-3 font-medium text-gray-700">
                         Date
                       </th>
@@ -617,6 +710,7 @@ useEffect(() => {
         </div>
       </main>
 
+      {/* Footer */}
       <footer className="border-t bg-white mt-10">
         <div className="max-w-6xl mx-auto px-6 py-5 text-sm text-gray-500">
           MandiMantra &copy; 2026

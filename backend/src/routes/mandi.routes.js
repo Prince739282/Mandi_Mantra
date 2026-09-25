@@ -2,6 +2,49 @@ import { Router } from "express";
 
 const router = Router();
 
+// Get states
+router.get("/states", async (req, res) => {
+  try {
+    const params = new URLSearchParams({
+      "api-key": process.env.GOV_API_KEY,
+      format: "json",
+      limit: "1000",
+    });
+
+    const response = await fetch(
+      `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`,
+    );
+
+    const data = await response.json();
+
+    console.log("State API status:", response.status);
+    console.log("State records:", data.records?.length || 0);
+
+    if (!response.ok || !data.records) {
+      console.log("State API response:", data);
+
+      return res.status(500).json({
+        message: "Failed to fetch states",
+      });
+    }
+
+    const states = [
+      ...new Set(data.records.map((record) => record.state).filter(Boolean)),
+    ].sort();
+
+    console.log("States found:", states);
+
+    res.json(states);
+  } catch (error) {
+    console.log("State API error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch states",
+    });
+  }
+});
+
+// Get districts or markets
 router.get("/locations", async (req, res) => {
   try {
     const { state, district } = req.query;
@@ -41,8 +84,16 @@ router.get("/locations", async (req, res) => {
     }
 
     const values = district
-      ? [...new Set(data.records.map((record) => record.market))]
-      : [...new Set(data.records.map((record) => record.district))];
+      ? [
+          ...new Set(
+            data.records.map((record) => record.market).filter(Boolean),
+          ),
+        ]
+      : [
+          ...new Set(
+            data.records.map((record) => record.district).filter(Boolean),
+          ),
+        ];
 
     res.json(values);
   } catch (error) {
@@ -54,6 +105,7 @@ router.get("/locations", async (req, res) => {
   }
 });
 
+// Get commodities for a particular market
 router.get("/commodities", async (req, res) => {
   try {
     const { state, district, market } = req.query;
@@ -92,7 +144,9 @@ router.get("/commodities", async (req, res) => {
     }
 
     const commodities = [
-      ...new Set(data.records.map((record) => record.commodity)),
+      ...new Set(
+        data.records.map((record) => record.commodity).filter(Boolean),
+      ),
     ];
 
     res.json(commodities);
@@ -105,6 +159,7 @@ router.get("/commodities", async (req, res) => {
   }
 });
 
+// Get commodities for a district
 router.get("/district-commodities", async (req, res) => {
   try {
     const { state, district } = req.query;
@@ -141,7 +196,9 @@ router.get("/district-commodities", async (req, res) => {
     }
 
     const commodities = [
-      ...new Set(data.records.map((record) => record.commodity)),
+      ...new Set(
+        data.records.map((record) => record.commodity).filter(Boolean),
+      ),
     ];
 
     res.json(commodities);
@@ -153,6 +210,8 @@ router.get("/district-commodities", async (req, res) => {
     });
   }
 });
+
+// Get mandi prices
 router.get("/prices", async (req, res) => {
   try {
     const { commodity, state, district, market } = req.query;
