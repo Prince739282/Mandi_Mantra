@@ -105,6 +105,54 @@ router.get("/commodities", async (req, res) => {
   }
 });
 
+router.get("/district-commodities", async (req, res) => {
+  try {
+    const { state, district } = req.query;
+
+    if (!state || !district) {
+      return res.status(400).json({
+        message: "State and district are required",
+      });
+    }
+
+    const params = new URLSearchParams({
+      "api-key": process.env.GOV_API_KEY,
+      format: "json",
+      limit: "1000",
+    });
+
+    params.append("filters[state]", state);
+    params.append("filters[district]", district);
+
+    const response = await fetch(
+      `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`,
+    );
+
+    const data = await response.json();
+
+    console.log("District commodity search:", {
+      state,
+      district,
+      records: data.records?.length || 0,
+    });
+
+    if (!data.records) {
+      return res.json([]);
+    }
+
+    const commodities = [
+      ...new Set(data.records.map((record) => record.commodity)),
+    ];
+
+    res.json(commodities);
+  } catch (error) {
+    console.log("District commodity API error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch district commodities",
+    });
+  }
+});
 router.get("/prices", async (req, res) => {
   try {
     const { commodity, state, district, market } = req.query;
