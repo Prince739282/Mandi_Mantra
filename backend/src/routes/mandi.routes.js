@@ -285,4 +285,78 @@ router.get("/prices", async (req, res) => {
   }
 });
 
+router.get("/nearby", async (req, res) => {
+  try {
+    const { latitude, longitude } = req.query;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        message: "Latitude and longitude are required",
+      });
+    }
+
+    const params = new URLSearchParams({
+      "api-key": process.env.GOV_API_KEY,
+      format: "json",
+      limit: "1000",
+    });
+
+    const response = await fetch(
+      `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`,
+    );
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      console.log("Nearby API status:", response.status);
+      console.log("Nearby API response:", responseText);
+
+      return res.status(502).json({
+        message: "Government API request failed",
+        status: response.status,
+      });
+    }
+
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      return res.status(502).json({
+        message: "Government API did not return JSON",
+      });
+    }
+
+    if (!data.records) {
+      return res.json([]);
+    }
+
+    const locations = [
+      ...new Map(
+        data.records
+          .filter((record) => record.state && record.district && record.market)
+          .map((record) => [
+            `${record.state}-${record.district}-${record.market}`,
+            {
+              state: record.state,
+              district: record.district,
+              market: record.market,
+            },
+          ]),
+      ).values(),
+    ];
+
+    console.log("Nearby locations found:", locations.length);
+
+    res.json(locations);
+  } catch (error) {
+    console.log("Nearby API error:", error);
+
+    res.status(500).json({
+      message: "Failed to find nearby mandis",
+      error: error.message,
+    });
+  }
+});
+
 export default router;

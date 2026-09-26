@@ -34,9 +34,9 @@ function Home() {
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState("");
 
-  // -----------------------------
+ 
   // Load States
-  // -----------------------------
+  
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -64,9 +64,8 @@ function Home() {
     fetchStates();
   }, []);
 
-  // -----------------------------
   // Main Search - Districts
-  // -----------------------------
+ 
   useEffect(() => {
     if (!state) {
       setDistricts([]);
@@ -109,9 +108,7 @@ function Home() {
     fetchDistricts();
   }, [state]);
 
-  // -----------------------------
   // Main Search - Markets
-  // -----------------------------
   useEffect(() => {
     if (!state || !district) {
       setMarkets([]);
@@ -150,9 +147,8 @@ function Home() {
     fetchMarkets();
   }, [state, district]);
 
-  // -----------------------------
   // Main Search - Commodities
-  // -----------------------------
+  
   useEffect(() => {
     if (!state || !district || !market) {
       setCommodities([]);
@@ -191,9 +187,8 @@ function Home() {
     fetchCommodities();
   }, [state, district, market]);
 
-  // -----------------------------
   // Compare Search - Districts
-  // -----------------------------
+  
   useEffect(() => {
     if (!compareState) {
       setCompareDistricts([]);
@@ -234,9 +229,8 @@ function Home() {
     fetchCompareDistricts();
   }, [compareState]);
 
-  // -----------------------------
   // Compare Search - Commodities
-  // -----------------------------
+
   useEffect(() => {
     if (!compareState || !compareDistrict) {
       setCompareCommodities([]);
@@ -276,9 +270,8 @@ function Home() {
     fetchCompareCommodities();
   }, [compareState, compareDistrict]);
 
-  // -----------------------------
   // Use My Location
-  // -----------------------------
+ 
   const handleUseLocation = () => {
     setLocationMessage("");
     setError("");
@@ -329,9 +322,8 @@ function Home() {
     );
   };
 
-  // -----------------------------
+  
   // Main Search
-  // -----------------------------
   const handleSearch = async (event) => {
     event.preventDefault();
 
@@ -380,9 +372,8 @@ function Home() {
     }
   };
 
-  // -----------------------------
   // Compare Prices
-  // -----------------------------
+  
   const handleCompare = async (event) => {
     event.preventDefault();
 
