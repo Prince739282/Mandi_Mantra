@@ -284,32 +284,65 @@ function Home() {
     setLocationLoading(true);
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
+      async (position) => {
+        try {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
 
-        console.log("User location:", {
-          latitude,
-          longitude,
-        });
+          console.log("User location:", {
+            latitude,
+            longitude,
+          });
 
-        setLocationMessage(
-          `Location detected: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-        );
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+          );
 
-        setLocationLoading(false);
+          if (!response.ok) {
+            throw new Error("Unable to find location");
+          }
+
+          const data = await response.json();
+
+          console.log("Location data:", data);
+
+          const address = data.address;
+
+          const detectedState = address?.state || "";
+          const detectedDistrict =
+            address?.state_district ||
+            address?.district ||
+            address?.county ||
+            "";
+
+          if (!detectedState) {
+            throw new Error("State could not be detected");
+          }
+
+          setState(detectedState);
+
+          setLocationMessage(
+            `Location detected: ${detectedDistrict}, ${detectedState}`,
+          );
+        } catch (error) {
+          console.log("Location error:", error);
+
+          setLocationMessage(
+            "Unable to find your district from your location.",
+          );
+        } finally {
+          setLocationLoading(false);
+        }
       },
       (error) => {
-        console.log("Location error:", error);
+        console.log("Location permission error:", error);
 
         if (error.code === 1) {
-          setLocationMessage(
-            "Location permission was denied. Please allow location access and try again.",
-          );
+          setLocationMessage("Location permission was denied.");
         } else if (error.code === 2) {
           setLocationMessage("Unable to detect your location.");
         } else {
-          setLocationMessage("Location request timed out. Please try again.");
+          setLocationMessage("Location request timed out.");
         }
 
         setLocationLoading(false);
