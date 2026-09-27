@@ -2,6 +2,26 @@ import { Router } from "express";
 
 const router = Router();
 
+const fetchGovernmentAPI = async (params) => {
+  const url = `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`;
+
+  console.log("Government API URL:", url);
+
+  const response = await fetch(url);
+
+  const text = await response.text();
+
+  console.log("Government API status:", response.status);
+
+  if (!response.ok) {
+    console.log("Government API error response:", text);
+
+    throw new Error(`Government API returned ${response.status}`);
+  }
+
+  return JSON.parse(text);
+};
+
 // Get states
 router.get("/states", async (req, res) => {
   try {
