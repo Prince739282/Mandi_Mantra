@@ -104,16 +104,11 @@ router.get("/locations", async (req, res) => {
       params.append("filters[district]", district);
     }
 
-    const response = await fetch(
-      `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?${params.toString()}`,
-    );
-
-    const responseText = await response.text();
+    const data = await fetchGovernmentAPI(params);
 
     console.log("Government API status:", response.status);
     console.log("Government API response:", responseText);
 
-    const data = JSON.parse(responseText);
 
     console.log("Location search:", {
       state,
