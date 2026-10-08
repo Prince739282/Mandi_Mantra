@@ -109,7 +109,6 @@ router.get("/locations", async (req, res) => {
     console.log("Government API status:", response.status);
     console.log("Government API response:", responseText);
 
-
     console.log("Location search:", {
       state,
       district,
@@ -141,7 +140,6 @@ router.get("/locations", async (req, res) => {
     });
   }
 });
-
 // Get commodities for a particular market
 router.get("/commodities", async (req, res) => {
   try {
